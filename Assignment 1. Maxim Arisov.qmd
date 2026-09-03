@@ -1,0 +1,31 @@
+---
+title: "Assignment 1"
+author: "Maxim Arisov"
+format: pdf
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+# Introduction
+
+This article mainly focuses on distinguishing between absence and the presence of cardiac arrhythmia and when exists assign to one of the 16 groups. Therefore, group 1 is related to normal ECG , while groups 2 to 15 refers to different types of arrhythmia, and, lastly, group 16 refers to unclassified types of arrhythmia. The dataset has 279 attributes, where 206 are linear values and the rest of the attributes are nominal. The differences exist between programs and cardiologists classification. By taking cardiologists classification as a gold standard researchers want to minimize this inequality with help of machine learning tools.
+
+### Data
+
+For this analysis we will use the arrhythmia dataset from [Arrhythmia](https://archive.ics.uci.edu/dataset/5/arrhythmia) package.
+
+```{r}
+data <-read.csv("~/Downloads/arrhythmia/arrhythmia.data")
+head(data)
+```
+
+### Reasoning for Selecting a Dataset
+
+I picked this data to see how patient's demographic information such as age, gender, height, weight and other ECG variables contribute to predict the one of the 16 classes.
+
+### Independent and Dependent Variables of the Dataset
+
+The independent variables are heart rate, age, sex, height, weight, and other ECG variables. The dependent variables are 16 classes.
