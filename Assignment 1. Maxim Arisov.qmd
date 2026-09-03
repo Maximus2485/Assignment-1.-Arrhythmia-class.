@@ -1,19 +1,20 @@
 ---
 title: "Assignment 1"
 author: "Maxim Arisov"
-format: pdf
+date: 09/03/2026
+format: html
 editor: visual
 ---
 
-## Quarto
+# Arrhythmia
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+# Approach
 
-# Introduction
+## Introduction
 
 This article mainly focuses on distinguishing between absence and the presence of cardiac arrhythmia and when exists assign to one of the 16 groups. Therefore, group 1 is related to normal ECG , while groups 2 to 15 refers to different types of arrhythmia, and, lastly, group 16 refers to unclassified types of arrhythmia. The dataset has 279 attributes, where 206 are linear values and the rest of the attributes are nominal. The differences exist between programs and cardiologists classification. By taking cardiologists classification as a gold standard researchers want to minimize this inequality with help of machine learning tools.
 
-### Data
+### Data source
 
 For this analysis we will use the arrhythmia dataset from [Arrhythmia](https://archive.ics.uci.edu/dataset/5/arrhythmia) package.
 
@@ -22,9 +23,15 @@ data <-read.csv("~/Downloads/arrhythmia/arrhythmia.data")
 head(data)
 ```
 
-### Reasoning for Selecting a Dataset
+Data source
 
-I picked this data to see how patient's demographic information such as age, gender, height, weight and other ECG variables contribute to predict the one of the 16 classes.
+<https://raw.githubusercontent.com/Maximus2485/Assignment-1.-Arrhythmia-class./refs/heads/main/arrhythmia.data>
+
+Guvenir, H., Acar, B., Muderrisoglu, H., & Quinlan, R. (1997). Arrhythmia \[Dataset\]. UCI Machine Learning Repository. <https://doi.org/10.24432/C5BS32.>
+
+### Reasoning for Selecting a Dataset/ Research Question
+
+I picked this data to see how patient's demographic information such as age, gender, height, weight and other ECG variables contribute to predict the one of the 16 classes?
 
 ### Independent and Dependent Variables of the Dataset
 
