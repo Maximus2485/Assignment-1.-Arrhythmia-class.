@@ -1,0 +1,239 @@
+---
+title: "Assignment 1.Arrhythmia"
+subtitle: "DATA 607: week 1 Assignment"
+author: "Maxim Arisov"
+date: 09/05/2026
+format: html
+code-fold: true
+toc: true
+editor: visual
+---
+
+# Arrhythmia
+
+# Approach
+
+## Introduction
+
+This article mainly focuses on distinguishing between absence and the presence of cardiac arrhythmia and when exists assign to one of the 16 groups. Therefore, group 1 is related to normal ECG , while groups 2 to 15 refers to different types of arrhythmia, and, lastly, group 16 refers to unclassified types of arrhythmia. The dataset has 279 attributes, where 206 are linear values and the rest of the attributes are nominal. The differences exist between programs and cardiologists classification. By taking cardiologists classification as a gold standard researchers want to minimize this inequality with help of machine learning tools.
+
+### Reasoning for Selecting a Dataset/ Research Question
+
+I picked this data to see how patient's demographic information such as age, gender, height, weight and other ECG variables contribute to predict the one of the 16 classes?
+
+### Independent and Dependent Variables of the Dataset
+
+The independent variables are heart rate, age, sex, height, weight, and other ECG variables. The dependent variables are 16 classes.
+
+### Data source
+
+For this analysis we will use the arrhythmia dataset from [Arrhythmia](https://archive.ics.uci.edu/dataset/5/arrhythmia) package.
+
+Data source
+
+<https://raw.githubusercontent.com/Maximus2485/Assignment-1.-Arrhythmia-class./refs/heads/main/arrhythmia.data>
+
+Guvenir, H., Acar, B., Muderrisoglu, H., & Quinlan, R. (1997). Arrhythmia \[Dataset\]. UCI Machine Learning Repository. <https://doi.org/10.24432/C5BS32.>
+
+```{r}
+options(repos = c(CRAN = "https://r-project.org"))
+install.packages("caret", repos = "https://r-project.org")
+library(tidyverse)
+#Data Loading
+data_url <- "https://raw.githubusercontent.com/Maximus2485/Assignment-1.-Arrhythmia-class./refs/heads/main/arrhythmia.data"
+
+data <- read.csv(
+  data_url,
+  header = FALSE,
+  na.strings = "?"
+)
+
+#Name variables
+names(data)[1:15] <- c(
+  "age",
+  "sex",
+  "height",
+  "weight",
+  "qrs_duration",
+  "pr_interval",
+  "qt_interval",
+  "t_interval",
+  "p_interval",
+  "qrs_angle",
+  "t_angle",
+  "p_angle",
+  "qrst_angle",
+  "j_angle",
+  "heart_rate"
+)
+
+# Name the last column
+names(data)[280] <- "class"
+# Convert class into a factor because this is a classification problem
+data$class <- as.factor(data$class)
+head(data)
+```
+
+# Code Base Deliverable
+
+### Data Exploration
+
+```{r}
+# Number of missing values
+sum(is.na(data))
+
+# Missing values by variable
+missing_values <- colSums(is.na(data))
+# Show variables containing missing values
+missing_values[missing_values > 0]
+
+# Distribution of the class
+table(data$class)
+
+# Percentage distribution
+round(prop.table(table(data$class)) * 100, 2)
+
+#Class Distribution
+data %>%
+  count(class) %>%
+  ggplot(aes(x = class, y = n)) +
+  geom_col() +
+  labs(
+    title = "Distribution of Arrhythmia Classes",
+    x = "Arrhythmia Class",
+    y = "Number of Patients"
+  ) +
+  theme_minimal()
+```
+
+### Data Preparation
+
+Missing predictor values are replaced with the median of each variable
+
+```{r}
+library(tidyverse)
+# Separate predictors and response
+X <- data %>%
+  select(-class)
+
+y <- data$class
+
+# Find columns with all missing values
+all_missing <- colSums(!is.na(X)) == 0
+# Remove predictors that contain only missing values
+X <- X[, !all_missing]
+
+install.packages("caret")
+install.packages("recipes")
+library(caret)
+# Median imputation
+preprocess_model <- preProcess(
+  X,
+  method = "medianImpute"
+)
+
+X_clean <- predict(preprocess_model, X)
+
+# Combine predictors and target again
+data_clean <- X_clean
+data_clean$class <- y
+
+# Confirm no missing values remain
+sum(is.na(data_clean))
+```
+
+### Training and Testing Data
+
+I divided into training and testing sets. The training set is used to build the model, while the testing set is used to evaluate how well the model performs on unseen observations
+
+```{r}
+set.seed(123)
+
+train_index <- createDataPartition(
+  data_clean$class,
+  p = 0.80,
+  list = FALSE
+)
+
+train_data <- data_clean[train_index, ]
+test_data <- data_clean[-train_index, ]
+
+# Check dimensions
+dim(train_data)
+dim(test_data)
+```
+
+### Random Forest Model
+
+A Random Forest classifier is used because this is a multiclass classification problem with a large number of predictor variables.
+
+```{r}
+install.packages("randomForest")
+library(randomForest)
+set.seed(123)
+
+rf_model <- randomForest(
+  class ~ .,
+  data = train_data,
+  ntree = 500,
+  importance = TRUE
+)
+
+# Display model results
+rf_model
+```
+
+### Model Predictions
+
+The trained Random Forest model is used to predict arrhythmia classes for patients in the testing dataset.
+
+```{r}
+rf_predictions <- predict(
+  rf_model,
+  newdata = test_data
+)
+
+head(rf_predictions)
+
+```
+
+### Model Evaluation
+
+```{r}
+confusionMatrix(
+  rf_predictions,
+  test_data$class
+)
+```
+
+### Variable Importance
+
+```{r}
+importance_values <- importance(rf_model)
+
+importance_df <- data.frame(
+  variable = rownames(importance_values),
+  importance = importance_values[, "MeanDecreaseGini"]
+)
+
+importance_df <- importance_df %>%
+  arrange(desc(importance))
+
+head(importance_df, 10)
+
+
+```
+
+### Conclusions
+
+The Random Forest model was about 72.1% accurate. It worked well for Class 1 but had problems predicting classes with fewer patients.
+
+Heart rate was the most important variable for predicting arrhythmia class. Other ECG variables, such as V228, V224, V91, and V197, were also important.
+
+Overall, the model shows that patient and ECG information can be used to predict arrhythmia classes. However, the model works better for some classes than others. In the future, the model could be improved to better predict classes with fewer patients.
+
+### References
+
+Google DeppMind. (2025). Gemini 3 Flash \[how to code random forest model in r example code\]. \[<https://www.google.com/search?q=how+to+code+random+forest+model+in+r+example+code&sca_esv=b5a5ca0fe1ad4433&biw=1301&bih=666&sxsrf=APpeQntfXhFFdvTeY-GstNHtyANXyyJK_A%3A1788637571944&ei=g3GcaoGUObnX5NoPtvCxmQM&oq=how+to+code+random+forest+model+in+R+&gs_lp=Egxnd3Mtd2l6LXNlcnAiJWhvdyB0byBjb2RlIHJhbmRvbSBmb3Jlc3QgbW9kZWwgaW4gUiAqAggBMgUQIRigATIFECEYoAEyBRAhGJ8FMgUQIRifBUjoG1DcBljcBnABeAGQAQCYAWqgAWqqAQMwLjG4AQHIAQD4AQGYAgKgAnvCAgoQABhHGNYEGLADwgIOEAAY5AIY1gQYsAPYAQHCAhcQLhjcBhi4BhjaBhjYAhjIAxiwA9gBAZgDAIgGAZAGD7oGBggBEAEYCZIHAzEuMaAHkgSyBwMwLjG4B3TCBwUwLjEuMcgHCIAIAQ&sclient=gws-wiz-serp>\]. Accessed September 5th, 2026.
+
+ 
